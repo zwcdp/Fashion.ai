@@ -30,7 +30,7 @@ def triplet_loss(sample_embedding,
     
     return loss if count == 0 else loss/count
 
-@torch.jit.script
+@@torch.jit.script
 def gram_matrix(feat:torch.Tensor):
     batch, channel, _, _ = feat.size()
     vector = feat.view(batch, channel, -1)
@@ -40,20 +40,20 @@ def gram_matrix(feat:torch.Tensor):
     for bdx in range(batch):
         v = vector[bdx, :, :]
         gram_mat[bdx, :, :] = torch.mm(v, v.t())
-    return gram_mat/normalization
+    return gram_mat#/normalization
 
-@torch.jit.script
+# @torch.jit.script
+# some weird jit shit
+# it will not work if linear algebra is used
 def euclid_dist(X):
     """X is in shape (n_sample, n_feature)"""
     n_sam, n_dim = X.size()
-    dot_prod = X@X.t()
-    diag_ = dot_prod.diag()
-    one_col = torch.ones((n_sam, 1), device=X.device)
-    one_row = torch.ones((1, n_sam), device=X.device)
-    D2 = one_col @ diag_.unsqueeze(0) + diag_.unsqueeze(1) @ one_row 
-    D2 -= 2*dot_prod
-    D2 = 0.2 * (D2 + D2.permute(1,0))
-    return torch.sqrt(D2)
+    dist = torch.zeros((n_sam, n_sam), device=X.device)
+    for idx in range(n_sam):
+        for jdx in range(idx+1, n_sam):
+            dist[idx, jdx] = torch.sqrt(((X[idx,:] - X[jdx,:])**2).sum())
+            dist[jdx, idx] = dist[idx, jdx]
+    return dist
 
 @torch.jit.script
 def spectral_loss(feat:torch.Tensor, vec:torch.Tensor):
