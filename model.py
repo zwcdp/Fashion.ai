@@ -62,3 +62,49 @@ class ConvNet(nn.Module):
         out = self.out(out)
         
         return out
+
+# Load pretrained model
+# feature_cnn = ConvNet().to(device)
+# feature_cnn.load_state_dict(torch.load("fashionCNN.weight"))
+
+# Embed the images using pretrained feature maps
+class ConvEmbeddingNet(nn.Module):
+    """
+    Convolution Net that classifies MNIST images and output embedding map
+    """
+    def __init__(self, dim_hid=8, dim_embed=50, n_class=10):
+        super(ConvEmbeddingNet, self).__init__()
+        
+        self.cnn = FeatureMaps()
+        
+        self.embed = nn.Sequential(
+            nn.Dropout(0.05),
+            nn.Linear(88*dim_hid, dim_embed*8),
+            nn.LeakyReLU(),
+            nn.Linear(dim_embed*8, dim_embed*4),
+            nn.LeakyReLU(),
+            nn.Linear(dim_embed*4, dim_embed)
+        )
+        self.output = nn.Sequential(
+            nn.LeakyReLU(), 
+            nn.Linear(dim_embed, n_class)   
+                                   )
+        self.cat2vec = nn.Embedding(n_class, dim_embed, max_norm=10.0)
+        
+    def forward(self, img, label):
+        # max_norm for embedded items
+        max_norm = 25.0
+        
+        batch, _, _, _ = img.size()
+        
+        f0, f1, f2 = self.cnn(img)
+        f_ = torch.cat((f1.view(batch,-1), f2.view(batch,-1)), dim=1)
+        v_x = self.embed(f_)
+        v_norm = (torch.sqrt((v_x**2).sum(1)) + 1e-6).detach()
+        v_norm[v_norm < max_norm] = 1.0
+        v_x = v_x / v_norm.unsqueeze(1)
+        logit = self.output(v_x)
+        v_y = self.cat2vec(label)
+        assert v_x.size() == v_y.size()
+        
+        return (v_x, v_y), logit, (f0, f1, f2)
