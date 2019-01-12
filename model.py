@@ -67,6 +67,25 @@ class ConvNet(nn.Module):
 # feature_cnn = ConvNet().to(device)
 # feature_cnn.load_state_dict(torch.load("fashionCNN.weight"))
 
+class FeatureMaps(nn.Module):
+    """Get pretrained CNN feature maps"""
+    def __init__(self):
+        super(FeatureMaps, self).__init__()
+        cnn = ConvNet()
+        cnn.load_state_dict(torch.load("fashionCNN.weight"))
+        
+        self.conv0 = cnn.conv0
+        self.conv1 = cnn.conv1
+        self.conv2 = cnn.conv2
+        
+    def forward(self, img):
+        
+        f0 = self.conv0(img).detach()
+        f1 = self.conv1(f0).detach()
+        f2 = self.conv2(f1).detach()
+        
+        return f0, f1, f2
+
 # Embed the images using pretrained feature maps
 class ConvEmbeddingNet(nn.Module):
     """
