@@ -35,7 +35,8 @@ def gram_matrix(feat:torch.Tensor):
     batch, channel, _, _ = feat.size()
     vector = feat.view(batch, channel, -1)
     _, normalization = vector.view(batch,-1).size()
-    gram_mat = torch.zeros((batch, channel, channel))
+    gram_mat = torch.zeros((batch, channel, channel), 
+        device=feat.device)
     for bdx in range(batch):
         v = vector[bdx, :, :]
         gram_mat[bdx, :, :] = torch.mm(v, v.t())
