@@ -30,7 +30,7 @@ def triplet_loss(sample_embedding,
     
     return loss if count == 0 else loss/count
 
-@@torch.jit.script
+@torch.jit.script
 def gram_matrix(feat:torch.Tensor):
     batch, channel, _, _ = feat.size()
     vector = feat.view(batch, channel, -1)
