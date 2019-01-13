@@ -69,10 +69,10 @@ class ConvNet(nn.Module):
 
 class FeatureMaps(nn.Module):
     """Get pretrained CNN feature maps"""
-    def __init__(self):
+    def __init__(self, path="pretrained/fashionCNN.weight"):
         super(FeatureMaps, self).__init__()
         cnn = ConvNet()
-        cnn.load_state_dict(torch.load("fashionCNN.weight"))
+        cnn.load_state_dict(torch.load(path))
         
         self.conv0 = cnn.conv0
         self.conv1 = cnn.conv1
