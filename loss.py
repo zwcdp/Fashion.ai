@@ -56,13 +56,13 @@ def euclid_dist(X):
     return dist
 
 @torch.jit.script
-def spectral_loss(feat:torch.Tensor, vec:torch.Tensor, num_sam:int=-1):
+def spectral_loss(feat:torch.Tensor, vec:torch.Tensor, num_sam:int=1):
     
     batch, _, _, _ = feat.size()
 
-    if num_sam == -1:
+    if num_sam == 1:
         assert vec.size()[0] == batch
-    elif num_sam > 0 and num_sam <= batch:
+    elif num_sam > 1 and num_sam <= batch:
         batch = num_sam
         idx_ = torch.range(0, batch)
         choice_ = torch.multinomial(idx_, num_sam, False)
